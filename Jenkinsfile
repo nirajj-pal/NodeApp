@@ -61,17 +61,17 @@ docker build \
 //       }
 //     }
 
-    stage('Install Kubectl') {
-      steps {
-        sh '''#!/usr/bin/env bash
-set -euo pipefail
-mkdir -p .bin
-curl -sSL -o .bin/kubectl "https://dl.k8s.io/release/$(curl -sSL https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-chmod +x .bin/kubectl
-.bin/kubectl version --client
-'''
-      }
-    }
+//     stage('Install Kubectl') {
+//       steps {
+//         sh '''#!/usr/bin/env bash
+// set -euo pipefail
+// mkdir -p .bin
+// curl -sSL -o .bin/kubectl "https://dl.k8s.io/release/$(curl -sSL https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+// chmod +x .bin/kubectl
+// .bin/kubectl version --client
+// '''
+//       }
+//     }
 
     stage('Deploy to Kubernetes') {
       steps {
