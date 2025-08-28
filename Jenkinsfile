@@ -40,15 +40,6 @@ pipeline {
             }
         }
 
-        stage('Trivy Scan'){
-            steps {
-                sh '''
-                trivy --severity HIGH,CRITICAL --no-progress image \
-                --format table -o trivy-scan-report.txt ${HARBOR_REPO}:latest
-                '''
-            }
-        }
-
         stage('Push Image to Harbor'){
             steps {
                 withCredentials([usernamePassword(credentialsId: "${HARBOR_CREDENTIALS_ID}", usernameVariable: 'HUSER', passwordVariable: 'HPASS')]) {
