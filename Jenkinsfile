@@ -26,7 +26,7 @@ pipeline {
 		stage('Build Docker Image'){
 			steps {
 				script {
-					dockerImage = docker.build("${HARBOR_REPO}:latest")
+					dockerImage = docker.build("${HARBOR_REPO}:latest", "--no-cache .")
 				}
 			}
 		}
