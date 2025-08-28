@@ -35,7 +35,7 @@ pipeline {
                 echo "Docker version check:"
                 docker --version
                 echo "Building image with BuildKit enabled..."
-                DOCKER_BUILDKIT=1 docker build -t ${HARBOR_REPO}:latest .
+                docker build -t ${HARBOR_REPO}:latest .
                 '''
             }
         }
