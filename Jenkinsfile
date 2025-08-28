@@ -44,22 +44,22 @@ docker build \
       }
     }
 
-    stage('Push Image to Harbor') {
-      steps {
-        withCredentials([usernamePassword(credentialsId: "${HARBOR_CREDENTIALS_ID}",
-                                          usernameVariable: 'HUSER',
-                                          passwordVariable: 'HPASS')]) {
-          sh '''#!/usr/bin/env bash
-set -euo pipefail
-FULL_IMAGE="${REGISTRY}/${HARBOR_PROJECT}/${IMAGE}"
+//     stage('Push Image to Harbor') {
+//       steps {
+//         withCredentials([usernamePassword(credentialsId: "${HARBOR_CREDENTIALS_ID}",
+//                                           usernameVariable: 'HUSER',
+//                                           passwordVariable: 'HPASS')]) {
+//           sh '''#!/usr/bin/env bash
+// set -euo pipefail
+// FULL_IMAGE="${REGISTRY}/${HARBOR_PROJECT}/${IMAGE}"
 
-echo "$HPASS" | docker login "${REGISTRY}" -u "$HUSER" --password-stdin
-docker push "${FULL_IMAGE}:${BUILD_NUMBER}"
-docker push "${FULL_IMAGE}:latest"
-'''
-        }
-      }
-    }
+// echo "$HPASS" | docker login "${REGISTRY}" -u "$HUSER" --password-stdin
+// docker push "${FULL_IMAGE}:${BUILD_NUMBER}"
+// docker push "${FULL_IMAGE}:latest"
+// '''
+//         }
+//       }
+//     }
 
     stage('Install Kubectl') {
       steps {
