@@ -5,71 +5,75 @@ pipeline {
 
   environment {
     REGISTRY = '10.48.228.71'
-    HARBOR_PROJECT = 'hgtspl'     // project in Harbor
-    IMAGE = 'nodeapp'             // repository name you want under the project
+    HARBOR_PROJECT = 'hgtspl'       // Harbor project
+    IMAGE = 'nodeapp'               // repository under the project
     HARBOR_CREDENTIALS_ID = 'harbor-credentials'
-    PATH = "${WORKSPACE}/.bin:${PATH}"   // for kubectl we place in workspace
+    PATH = "${WORKSPACE}/.bin:${PATH}"   // kubectl lives in workspace
   }
 
   stages {
-    stage('Checkout Github'){
+    stage('Checkout Github') {
       steps {
         git branch: 'main', credentialsId: 'jen-doc-git', url: 'https://github.com/nirajj-pal/NodeApp.git'
       }
     }
 
-    stage('Install node dependencies'){ steps { sh 'npm install' } }
+    stage('Install node dependencies') {
+      steps { sh 'npm install' }
+    }
 
-    stage('Test Code'){ steps { sh 'npm test' } }
+    stage('Test Code') {
+      steps { sh 'npm test' }  // exits 0; change package.json when you add real tests
+    }
 
-    stage('Build Docker Image'){
+    stage('Build Docker Image') {
       steps {
-        sh '''
-          set -euxo pipefail
-          export DOCKER_BUILDKIT=1
-          FULL_IMAGE="${REGISTRY}/${HARBOR_PROJECT}/${IMAGE}"
+        sh '''#!/usr/bin/env bash
+set -euo pipefail
+export DOCKER_BUILDKIT=1
 
-          echo "Docker version:"
-          docker --version
+FULL_IMAGE="${REGISTRY}/${HARBOR_PROJECT}/${IMAGE}"
+echo "Docker version:"; docker --version
+echo "Building ${FULL_IMAGE}:{latest,${BUILD_NUMBER}}"
 
-          docker build \
-            -t "${FULL_IMAGE}:latest" \
-            -t "${FULL_IMAGE}:${BUILD_NUMBER}" \
-            .
-        '''
+docker build \
+  -t "${FULL_IMAGE}:latest" \
+  -t "${FULL_IMAGE}:${BUILD_NUMBER}" \
+  .
+'''
       }
     }
 
-    stage('Push Image to Harbor'){
+    stage('Push Image to Harbor') {
       steps {
         withCredentials([usernamePassword(credentialsId: "${HARBOR_CREDENTIALS_ID}",
                                           usernameVariable: 'HUSER',
                                           passwordVariable: 'HPASS')]) {
-          sh '''
-            set -euxo pipefail
-            FULL_IMAGE="${REGISTRY}/${HARBOR_PROJECT}/${IMAGE}"
+          sh '''#!/usr/bin/env bash
+set -euo pipefail
+FULL_IMAGE="${REGISTRY}/${HARBOR_PROJECT}/${IMAGE}"
 
-            echo "$HPASS" | docker login "${REGISTRY}" -u "$HUSER" --password-stdin
-            docker push "${FULL_IMAGE}:${BUILD_NUMBER}"
-            docker push "${FULL_IMAGE}:latest"
-          '''
+echo "$HPASS" | docker login "${REGISTRY}" -u "$HUSER" --password-stdin
+docker push "${FULL_IMAGE}:${BUILD_NUMBER}"
+docker push "${FULL_IMAGE}:latest"
+'''
         }
       }
     }
 
-    stage('Install Kubectl'){
+    stage('Install Kubectl') {
       steps {
-        sh '''
-          set -euxo pipefail
-          mkdir -p .bin
-          curl -sSL -o .bin/kubectl "https://dl.k8s.io/release/$(curl -sSL https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-          chmod +x .bin/kubectl
-          .bin/kubectl version --client
-        '''
+        sh '''#!/usr/bin/env bash
+set -euo pipefail
+mkdir -p .bin
+curl -sSL -o .bin/kubectl "https://dl.k8s.io/release/$(curl -sSL https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+chmod +x .bin/kubectl
+.bin/kubectl version --client
+'''
       }
     }
 
-    stage('Deploy to Kubernetes'){
+    stage('Deploy to Kubernetes') {
       steps {
         script {
           kubeconfig(
